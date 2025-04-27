@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -65,13 +67,17 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<Post> createPost(
+            @RequestParam String title,
             @RequestParam String text,
             @RequestParam String creatorId,
             @RequestParam String creatorName,
+            @RequestParam String category,
+            @RequestParam String tags,
+            @RequestParam boolean published,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             @RequestParam(value = "video", required = false) MultipartFile video) throws IOException {
         logger.info("Creating post for creatorId: {}", creatorId);
-        Post post = postService.createPost(text, creatorId, creatorName, images, video);
+        Post post = postService.createPost(title, text, creatorId, creatorName, category, tags, published, images, video);
         logger.info("Post created with ID: {}", post.getId());
         return ResponseEntity.ok(post);
     }
@@ -108,11 +114,15 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<Post> updatePost(
             @PathVariable String id,
+            @RequestParam String title,
             @RequestParam String text,
+            @RequestParam String category,
+            @RequestParam String tags,
+            @RequestParam boolean published,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             @RequestParam(value = "video", required = false) MultipartFile video) throws IOException {
         logger.info("Updating post with ID: {}", id);
-        Post post = postService.updatePost(id, text, images, video);
+        Post post = postService.updatePost(id, title, text, category, tags, published, images, video);
         if (post == null) {
             logger.warn("Post not found with ID: {}", id);
             return ResponseEntity.notFound().build();
@@ -224,5 +234,62 @@ public class PostController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE))
                 .body(resource);
+    }
+
+    @GetMapping("/sample")
+    public ResponseEntity<List<Post>> getSamplePosts() {
+        logger.info("Fetching sample posts");
+        List<Post> samplePosts = Arrays.asList(createSamplePost1(), createSamplePost2());
+        return ResponseEntity.ok(samplePosts);
+    }
+
+    private Post createSamplePost1() {
+        Post post = new Post();
+        post.setId("sample1");
+        post.setTitle("Sample Post 1");
+        post.setText("This is the content of the first sample post.");
+        post.setCreatorId("user1");
+        post.setCreatorName("John Doe");
+        post.setCategory("Strength");
+        post.setTags(Arrays.asList("fitness", "strength"));
+        post.setPublished(true);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        Post.Media media = new Post.Media();
+        media.setPath("sample-image1.jpg");
+        media.setType(Post.MediaType.IMAGE);
+        post.setMedia(Arrays.asList(media));
+
+        Post.Comment comment = new Post.Comment();
+        comment.setId("comment1");
+        comment.setText("Great post!");
+        comment.setCreatorId("user2");
+        comment.setCreatorName("Jane Smith");
+        comment.setCreatedAt(LocalDateTime.now());
+        post.setComments(Arrays.asList(comment));
+
+        return post;
+    }
+
+    private Post createSamplePost2() {
+        Post post = new Post();
+        post.setId("sample2");
+        post.setTitle("Sample Post 2");
+        post.setText("This is the content of the second sample post.");
+        post.setCreatorId("user3");
+        post.setCreatorName("Alice Johnson");
+        post.setCategory("Cardio");
+        post.setTags(Arrays.asList("cardio", "workout"));
+        post.setPublished(false);
+        post.setCreatedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        Post.Media media = new Post.Media();
+        media.setPath("sample-video1.mp4");
+        media.setType(Post.MediaType.VIDEO);
+        post.setMedia(Arrays.asList(media));
+
+        return post;
     }
 }

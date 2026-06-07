@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.Post;
 import com.example.demo.repository.PostRepository;
+import com.example.demo.utils.MediaValidator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class PostService {
     private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
     private final PostRepository postRepository;
+    private final MediaValidator mediaValidator;
 
     @Value("${file.upload-dir}")
     private String UPLOAD_DIR;
@@ -57,36 +59,6 @@ public class PostService {
         logger.info("Upload directory {} is writable", uploadPath);
     }
 
-    private void validateMedia(MultipartFile[] images, MultipartFile video) {
-        final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;   // 5MB
-        final long MAX_VIDEO_SIZE = 50 * 1024 * 1024;  // 50MB
-
-        if (images != null) {
-            for (MultipartFile image : images) {
-                if (image == null || image.isEmpty()) {
-                    continue;
-                }
-                String contentType = image.getContentType();
-                if (contentType == null || !contentType.startsWith("image/")) {
-                    throw new IllegalArgumentException("Only image files are allowed for images");
-                }
-                if (image.getSize() > MAX_IMAGE_SIZE) {
-                    throw new IllegalArgumentException("Image size exceeds 5MB limit");
-                }
-            }
-        }
-
-        if (video != null && !video.isEmpty()) {
-            String contentType = video.getContentType();
-            if (contentType == null || !contentType.startsWith("video/")) {
-                throw new IllegalArgumentException("Only video files are allowed for video");
-            }
-            if (video.getSize() > MAX_VIDEO_SIZE) {
-                throw new IllegalArgumentException("Video size exceeds 50MB limit");
-            }
-        }
-    }
-
     public Post createPost(String title, String text, String creatorId, String creatorName, String category, String tags, boolean published, MultipartFile[] images, MultipartFile video) throws IOException {
         logger.info("Creating post with title: {}, text: {}, creatorId: {}, creatorName: {}, category: {}, tags: {}, published: {}", title, text, creatorId, creatorName, category, tags, published);
 
@@ -109,7 +81,7 @@ public class PostService {
             throw new IllegalArgumentException("Tags cannot be empty");
         }
 
-        validateMedia(images, video);
+        mediaValidator.validateMedia(images, video);
 
         Post post = new Post();
         post.setTitle(title);
@@ -208,7 +180,7 @@ public class PostService {
             throw new IllegalArgumentException("Tags cannot be empty");
         }
 
-        validateMedia(images, video);
+        mediaValidator.validateMedia(images, video);
 
         post.setTitle(title);
         post.setText(text);

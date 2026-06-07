@@ -41,11 +41,11 @@ public class PostInteractionController {
             logger.info("Authenticated user ID: {}", authenticatedUser.getId());
 
             if (recipientId == null || recipientId.isEmpty()) {
-                recipientId = authenticatedUser.getId();
+                recipientId = String.valueOf(authenticatedUser.getId());
                 logger.info("No recipientId provided, using authenticated user's ID: {}", recipientId);
             }
 
-            if (!recipientId.equals(authenticatedUser.getId())) {
+            if (!recipientId.equals(String.valueOf(authenticatedUser.getId()))) {
                 logger.warn("User {} attempted to access interactions for recipient {}", authenticatedUser.getId(), recipientId);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cannot access interactions for other users");
             }
@@ -90,11 +90,11 @@ public class PostInteractionController {
 
             String recipientId = request.getRecipientId();
             if (recipientId == null || recipientId.isEmpty()) {
-                recipientId = authenticatedUser.getId();
+                recipientId = String.valueOf(authenticatedUser.getId());
                 logger.info("No recipientId provided, using authenticated user's ID: {}", recipientId);
             }
 
-            if (!recipientId.equals(authenticatedUser.getId())) {
+            if (!recipientId.equals(String.valueOf(authenticatedUser.getId()))) {
                 logger.warn("User {} attempted to mark interactions as read for recipient {}", authenticatedUser.getId(), recipientId);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cannot mark interactions as read for other users");
             }

@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import './style.css';
 import QuizzesPage from './pages/QuizzesPage';
